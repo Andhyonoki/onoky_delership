@@ -1,0 +1,210 @@
+/* =======================
+   Global Styles
+========================== */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+/* =======================
+   Container Utama
+========================== */
+.search-container {
+  display: flex;
+  height: 100vh;
+}
+
+/* =======================
+   Sidebar (default width 250px)
+========================== */
+.search-content {
+  flex: 1;
+  padding: 40px;
+  background-color: #fff;
+  overflow-y: auto;
+  margin-left: 250px;
+  transition: margin-left 0.3s ease;
+}
+
+.search-content.closed {
+  margin-left: 0;
+}
+
+/* =======================
+   Topbar
+========================== */
+.topbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 10px;
+}
+
+.topbar p {
+  font-weight: 500;
+}
+
+/* =======================
+   Heading
+========================== */
+h1 {
+  font-size: 30px;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+/* =======================
+   Section Title
+========================== */
+.section {
+  margin-bottom: 30px;
+}
+
+.section h3 {
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+/* =======================
+   Car Type Buttons (horizontal scroll)
+========================== */
+.car-types {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: thin; /* Firefox */
+  
+}
+
+.car-types::-webkit-scrollbar {
+  height: 6px;
+}
+
+.car-types::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 10px;
+}
+
+.car-types::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.car-type-btn {
+  padding: 8px 12px;
+  border: 1px solid #d0d0d0;
+  background-color: rgb(255, 248, 248);
+  border-radius: 10px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: 0.3s;
+  min-width: 0px;
+  text-align: center;
+  white-space: nowrap;
+  flex-shrink: 0;
+  width: 15%;
+}
+
+.car-type-btn.selected {
+  background-color: #f0f4ff;
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+/* =======================
+   Price Range Input
+========================== */
+.price-range {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.price-range input {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  width: 100%;
+  max-width: 200px;
+  font-size: 14px;
+}
+
+.price-range input:focus {
+  border-color: #3b82f6;
+  outline: none;
+}
+
+/* =======================
+   Textarea
+========================== */
+textarea {
+  width: 100%;
+  height: 120px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  resize: none;
+  font-size: 14px;
+}
+
+textarea:focus {
+  border-color: #3b82f6;
+  outline: none;
+}
+
+/* =======================
+   Search Button
+========================== */
+.search-button {
+  margin-top: 20px;
+  padding: 14px 30px;
+  background-color: #000;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  width: 15%;           
+}
+
+.search-button:hover {
+  background-color: #333;
+}
+
+/* =======================
+   Sidebar Toggle Button
+========================== */
+.toggle-btn {
+  position: fixed;
+  top: 20px;
+  left: 260px;
+  z-index: 1100;
+  padding: 6px;
+  background-color: #333;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 14px;
+  width: 30px;
+  height: 30px;
+  line-height: 18px;
+  text-align: center;
+  cursor: pointer;
+  transition: left 0.3s ease, background-color 0.3s ease;
+}
+
+.toggle-btn:hover {
+  background-color: #555;
+}
+
+.toggle-btn.closed {
+  left: 10px;
+}

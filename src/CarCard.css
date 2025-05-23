@@ -1,0 +1,54 @@
+/* src/components/CarCard.css */
+.car-card {
+  width: 300px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  margin: 10px;
+}
+
+.car-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+.car-info {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.car-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.car-rating {
+  font-size: 0.9rem;
+  color: #f5a623;
+}
+
+.car-description {
+  font-size: 0.9rem;
+  color: #555;
+  height: 40px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.car-price {
+  font-weight: bold;
+  color: #000;
+}
+
+.view-detail {
+  font-size: 0.9rem;
+  text-decoration: none;
+  color: #0057ff;
+}

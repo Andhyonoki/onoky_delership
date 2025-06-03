@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import Sidebar from "./component/Navbar";  // Pastikan komponen Sidebar menerima toggleSidebar dan isOpen props
+import { useNavigate } from "react-router-dom";
+import Sidebar from "./component/Navbar";
 import "./SearchPage.css";
 
 const carTypes = [
@@ -18,10 +19,9 @@ export default function SearchPage() {
   const [maxPrice, setMaxPrice] = useState("");
   const [utility, setUtility] = useState("");
   const [user, setUser] = useState(null);
-
-  // Jangan langsung override sidebarOpen saat resize kalau user sudah toggle manual
-  // Kita pakai ref untuk menyimpan apakah user sudah toggle manual
   const [userToggled, setUserToggled] = useState(false);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
@@ -39,7 +39,6 @@ export default function SearchPage() {
     return () => window.removeEventListener("resize", handleResize);
   }, [userToggled]);
 
-  // Toggle sidebar dan set flag userToggled = true supaya resize tidak override
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
     setUserToggled(true);
@@ -51,16 +50,17 @@ export default function SearchPage() {
       return;
     }
 
+    // Prepare data dengan tipe yang tepat dan null jika kosong
     const searchData = {
-      userId: user.id, // pastikan user punya properti 'id'
-      carType: selectedType,
-      minPrice: parseFloat(minPrice),
-      maxPrice: parseFloat(maxPrice),
-      utility,
+      userId: user.id,
+      carType: selectedType || null,
+      minPrice: minPrice ? parseFloat(minPrice) : null,
+      maxPrice: maxPrice ? parseFloat(maxPrice) : null,
+      utility: utility.trim() !== "" ? utility : null,
     };
 
     try {
-      const res = await fetch("http://localhost:5000/search", {
+      const response = await fetch("http://localhost:5000/search", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -68,22 +68,34 @@ export default function SearchPage() {
         body: JSON.stringify(searchData),
       });
 
-      const data = await res.json();
-
-      if (res.ok) {
-        alert("✅ Pencarian berhasil disimpan ke histori!");
-      } else {
-        alert("❌ Gagal menyimpan: " + data.message);
+      if (!response.ok) {
+        // jika error dari server, baca pesan errornya
+        const errorData = await response.json();
+        alert("❌ Gagal mencari: " + (errorData.message || response.statusText));
+        return;
       }
-    } catch (err) {
-      console.error("❌ Error koneksi:", err);
-      alert("❌ Tidak bisa terhubung ke server.");
+
+      const results = await response.json();
+      console.log("Search results:", results);
+
+      // Cek apakah backend mengirim objek atau langsung array
+      // Misal backend kirim { cars: [...] }
+      const cars = Array.isArray(results) ? results : results.cars || [];
+
+      if (cars.length === 0) {
+        alert("⚠️ Tidak ada hasil ditemukan.");
+      }
+
+      // Navigasi ke halaman hasil dengan data mobil yang benar
+      navigate("/results", { state: { results: cars } });
+    } catch (error) {
+      alert("❌ Error koneksi ke server.");
+      console.error("Fetch error:", error);
     }
   };
 
   return (
     <div className="search-container">
-      {/* Pass toggleSidebar dan isOpen ke Sidebar */}
       <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
       <div
         className="search-content"
@@ -92,14 +104,15 @@ export default function SearchPage() {
           transition: "margin-left 0.3s ease",
         }}
       >
-        <div className="topbar">
-          <p>Hello, {user ? user.name : "Guest"} 👤</p>
-        </div>
+          <div className="topbar">
+            <p>Hello, {user ? user.name : "Guest"} 👤</p>
+          </div>
 
         <h1>Find most fit Car</h1>
 
         <div className="section">
           <h3>Car Type</h3>
+          <div class="search-page">
           <div className="car-types">
             {carTypes.map((type) => (
               <button
@@ -109,11 +122,13 @@ export default function SearchPage() {
                   selectedType === type.label ? "selected" : ""
                 }`}
               >
+                
                 <div className="car-icon">{type.icon}</div>
                 <div className="car-label">{type.label}</div>
               </button>
             ))}
           </div>
+        </div>
         </div>
 
         <div className="section">

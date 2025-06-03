@@ -28,7 +28,7 @@ const LoginPage = ({ onSwitchToSignup, onLoginSuccess }) => {
         localStorage.setItem("user", JSON.stringify(data.user));
 
         onLoginSuccess(data.user);
-        navigate("/search");
+        navigate("/Home");
       } else {
         alert("Login gagal: " + data.message);
       }

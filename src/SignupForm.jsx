@@ -97,7 +97,8 @@ export default function SignupForm({ onSwitchToLogin }) {
       const res = await fetch("/register", {  // pastikan endpoint ini di backend sudah ada
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, payment_method: paymentMethod, email, password }),
+        body: JSON.stringify({ name, paymentMethod, email, password }),
+
       });
 
       const data = await res.json();

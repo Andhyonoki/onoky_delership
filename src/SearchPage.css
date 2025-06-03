@@ -50,7 +50,7 @@ body {
   font-weight: 500;
 }
 
-/* =======================
+/* =======================  
    Heading
 ========================== */
 h1 {
@@ -63,7 +63,7 @@ h1 {
    Section Title
 ========================== */
 .section {
-  margin-bottom: 30px;
+  margin-bottom: 30px;  
 }
 
 .section h3 {
@@ -74,30 +74,13 @@ h1 {
 /* =======================
    Car Type Buttons (horizontal scroll)
 ========================== */
-.car-types {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 16px;
-  overflow-x: auto;
-  padding-bottom: 8px;
-  scrollbar-width: thin; /* Firefox */
+.search-page .car-types {
   
+   justify-content: center;
+  overflow-x: auto;
 }
 
-.car-types::-webkit-scrollbar {
-  height: 6px;
-}
-
-.car-types::-webkit-scrollbar-thumb {
-  background-color: #ccc;
-  border-radius: 10px;
-}
-
-.car-types::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.car-type-btn {
+.search-page .car-type-btn {
   padding: 8px 12px;
   border: 1px solid #d0d0d0;
   background-color: rgb(255, 248, 248);
@@ -112,11 +95,12 @@ h1 {
   width: 15%;
 }
 
-.car-type-btn.selected {
+.search-page .car-type-btn.selected {
   background-color: #f0f4ff;
   border-color: #3b82f6;
   color: #3b82f6;
 }
+
 
 /* =======================
    Price Range Input

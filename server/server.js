@@ -1,15 +1,33 @@
 const express = require('express');
 const cors = require('cors');
-const db = require('./db'); // Pastikan koneksi MySQL valid
+const db = require('./db');
 const bcrypt = require('bcrypt');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const port = 5000;
 
+// Setup folder dan konfigurasi multer untuk upload gambar
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, 'uploads');
+    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    // Menghindari nama file duplikat dengan timestamp + nama asli
+    cb(null, `${Date.now()}_${file.originalname}`);
+  }
+});
+const upload = multer({ storage });
+
 app.use(cors());
 app.use(express.json());
 
-// Root test endpoint
+// Root endpoint
 app.get('/', (req, res) => {
   res.send('Backend jalan! 🔥');
 });
@@ -24,7 +42,7 @@ app.post('/login', (req, res) => {
   const sql = 'SELECT * FROM users WHERE email = ?';
   db.query(sql, [email], async (err, results) => {
     if (err) {
-      console.error('❌ Query error:', err);
+      console.error('Error saat login:', err);
       return res.status(500).json({ message: 'Error di server' });
     }
     if (results.length === 0) {
@@ -33,7 +51,6 @@ app.post('/login', (req, res) => {
 
     const user = results[0];
     const isMatch = await bcrypt.compare(password, user.password);
-
     if (!isMatch) {
       return res.status(401).json({ message: 'Password salah' });
     }
@@ -46,17 +63,15 @@ app.post('/login', (req, res) => {
 // Register endpoint
 app.post('/register', async (req, res) => {
   const { name, email, password, paymentMethod } = req.body;
-
   if (!name || !email || !password || !paymentMethod) {
     return res.status(400).json({ message: "Semua field harus diisi" });
   }
 
   try {
     const emailExists = await new Promise((resolve, reject) => {
-      const checkSql = 'SELECT * FROM users WHERE email = ?';
-      db.query(checkSql, [email], (err, results) => {
-        if (err) reject(err);
-        else resolve(results.length > 0);
+      db.query('SELECT * FROM users WHERE email = ?', [email], (err, results) => {
+        if (err) return reject(err);
+        resolve(results.length > 0);
       });
     });
 
@@ -65,26 +80,24 @@ app.post('/register', async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    const insertSql = `
-      INSERT INTO users (name, email, password, payment_method)
-      VALUES (?, ?, ?, ?)
-    `;
-    db.query(insertSql, [name, email, hashedPassword, paymentMethod], (err, result) => {
-      if (err) {
-        console.error('❌ Insert error:', err);
-        return res.status(500).json({ message: 'Gagal mendaftar' });
+    db.query(
+      'INSERT INTO users (name, email, password, payment_method) VALUES (?, ?, ?, ?)',
+      [name, email, hashedPassword, paymentMethod],
+      (err) => {
+        if (err) {
+          console.error('Error saat register:', err);
+          return res.status(500).json({ message: 'Gagal mendaftar' });
+        }
+        res.status(201).json({ message: 'Signup berhasil' });
       }
-      res.status(201).json({ message: 'Signup berhasil' });
-    });
-
+    );
   } catch (err) {
-    console.error('❌ Error:', err);
+    console.error('Error server register:', err);
     res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 });
 
-// Fungsi bantu buat bikin query pencarian
+// Fungsi bantu bikin query pencarian mobil
 function buildCarQuery(filters) {
   let query = "SELECT * FROM cars WHERE 1=1";
   const params = [];
@@ -93,15 +106,15 @@ function buildCarQuery(filters) {
     query += " AND type = ?";
     params.push(filters.carType);
   }
-  if (filters.minPrice !== undefined && filters.minPrice !== null && filters.minPrice !== '') {
+  if (filters.minPrice) {
     query += " AND price >= ?";
     params.push(filters.minPrice);
   }
-  if (filters.maxPrice !== undefined && filters.maxPrice !== null && filters.maxPrice !== '') {
+  if (filters.maxPrice) {
     query += " AND price <= ?";
     params.push(filters.maxPrice);
   }
-  if (filters.utility && filters.utility.trim() !== "") {
+  if (filters.utility) {
     query += " AND utility LIKE ?";
     params.push(`%${filters.utility}%`);
   }
@@ -109,7 +122,7 @@ function buildCarQuery(filters) {
   return { query, params };
 }
 
-// Endpoint simpan histori pencarian dan cari mobil dengan fallback utility
+// Endpoint pencarian mobil + simpan histori pencarian
 app.post('/search', (req, res) => {
   const { userId, carType, minPrice, maxPrice, utility } = req.body;
 
@@ -117,6 +130,7 @@ app.post('/search', (req, res) => {
     return res.status(400).json({ message: "userId wajib diisi dan harus angka" });
   }
 
+  // Simpan histori pencarian
   const insertSql = `
     INSERT INTO search_logs (user_id, type, min_price, max_price, utility)
     VALUES (?, ?, ?, ?, ?)
@@ -124,11 +138,11 @@ app.post('/search', (req, res) => {
 
   db.query(insertSql, [userId, carType || null, minPrice || null, maxPrice || null, utility || null], (err, insertResult) => {
     if (err) {
-      console.error("❌ Error simpan search:", err);
+      console.error('Error simpan histori pencarian:', err);
       return res.status(500).json({ message: "Gagal menyimpan pencarian" });
     }
 
-    // Daftar filter untuk dicoba, fallback tanpa utility jika perlu
+    // Coba query dengan filter lengkap dulu, jika tidak ada hasil coba tanpa filter utility
     const filtersList = [
       { carType, minPrice, maxPrice, utility },
       { carType, minPrice, maxPrice, utility: null }
@@ -136,26 +150,17 @@ app.post('/search', (req, res) => {
 
     function tryQuery(index = 0) {
       if (index >= filtersList.length) {
-        // Kalau semua gagal, balikin kosong
         return res.status(200).json({ searchId: insertResult.insertId, cars: [] });
       }
 
       const { query, params } = buildCarQuery(filtersList[index]);
-      console.log(`🔍 Coba query dengan filter index ${index}:`, query, params);
-
       db.query(query, params, (err, results) => {
         if (err) {
-          console.error("❌ Error ambil data mobil:", err);
+          console.error('Error ambil data mobil:', err);
           return res.status(500).json({ message: "Gagal mengambil data mobil" });
         }
-
-        if (results.length === 0) {
-          // Coba filter berikutnya (fallback)
-          tryQuery(index + 1);
-        } else {
-          // Ada hasil, kirim balik
-          res.status(200).json({ searchId: insertResult.insertId, cars: results });
-        }
+        if (results.length === 0) tryQuery(index + 1);
+        else res.status(200).json({ searchId: insertResult.insertId, cars: results });
       });
     }
 
@@ -163,7 +168,7 @@ app.post('/search', (req, res) => {
   });
 });
 
-// Endpoint cari mobil GET (mirip tapi tanpa simpan histori)
+// GET mobil dengan filter query
 app.get('/cars', (req, res) => {
   const { type, minPrice, maxPrice, utility } = req.query;
 
@@ -174,57 +179,183 @@ app.get('/cars', (req, res) => {
     sql += ' AND type = ?';
     params.push(type);
   }
-
   if (minPrice && !isNaN(minPrice)) {
     sql += ' AND price >= ?';
-    params.push(parseFloat(minPrice));
+    params.push(minPrice);
   }
-
   if (maxPrice && !isNaN(maxPrice)) {
     sql += ' AND price <= ?';
-    params.push(parseFloat(maxPrice));
+    params.push(maxPrice);
   }
-
-  if (utility && utility.trim() !== "") {
+  if (utility) {
     sql += ' AND utility LIKE ?';
     params.push(`%${utility}%`);
   }
 
-  console.log("📦 SQL Query:", sql);
-  console.log("📌 Params:", params);
-
   db.query(sql, params, (err, results) => {
     if (err) {
-      console.error('❌ Error fetch cars:', err);
+      console.error('Error ambil data mobil:', err);
       return res.status(500).json({ message: 'Gagal mengambil data mobil' });
     }
     res.json(results);
   });
 });
 
-// === TAMBAHAN: Endpoint detail mobil berdasarkan id ===
+// Endpoint detail mobil by ID
 app.get('/cars/:id', (req, res) => {
   const carId = req.params.id;
+  if (!carId || isNaN(carId)) return res.status(400).json({ message: 'ID mobil wajib diisi dan angka' });
 
-  if (!carId) {
-    return res.status(400).json({ message: 'ID mobil wajib diisi' });
-  }
-
-  const sql = 'SELECT * FROM cars WHERE id = ?';
-  db.query(sql, [carId], (err, results) => {
+  db.query('SELECT * FROM cars WHERE id = ?', [carId], (err, results) => {
     if (err) {
-      console.error('❌ Error saat query detail mobil:', err);
+      console.error('Error ambil detail mobil:', err);
       return res.status(500).json({ message: 'Gagal mengambil data mobil' });
     }
-
-    if (results.length === 0) {
-      return res.status(404).json({ message: 'Mobil tidak ditemukan' });
-    }
-
+    if (results.length === 0) return res.status(404).json({ message: 'Mobil tidak ditemukan' });
     res.json(results[0]);
   });
 });
 
+
+
+// POST /tradein - tambah data trade-in
+app.post('/tradein', upload.single('carImage'), (req, res) => {
+  const { initialPrice, minBudget, maxBudget, description } = req.body;
+
+  if (!initialPrice || isNaN(initialPrice) || !minBudget || isNaN(minBudget) || !maxBudget || isNaN(maxBudget)) {
+    return res.status(400).json({ message: 'initialPrice, minBudget, dan maxBudget wajib diisi dan berupa angka' });
+  }
+
+  if (!req.file) {
+    return res.status(400).json({ message: 'Gambar mobil wajib diupload' });
+  }
+
+  const insertSql = `
+    INSERT INTO tradeins (initial_price, min_budget, max_budget, description, car_image)
+    VALUES (?, ?, ?, ?, ?)
+  `;
+
+  db.query(
+    insertSql,
+    [initialPrice, minBudget, maxBudget, description || null, req.file.filename],
+    (err, insertResult) => {
+      if (err) {
+        console.error('❌ Error insert trade-in:', err);
+        return res.status(500).json({ message: 'Gagal menyimpan data trade-in' });
+      }
+
+      const tradeinId = insertResult.insertId;
+      console.log('✅ Trade-in berhasil disimpan dengan ID:', tradeinId);
+
+      const getTradeinSql = 'SELECT * FROM tradeins WHERE id = ?';
+      db.query(getTradeinSql, [tradeinId], (err, results) => {
+        if (err) {
+          console.error('❌ Gagal mengambil trade-in setelah insert:', err);
+          return res.status(500).json({ message: 'Gagal mengambil data trade-in setelah insert' });
+        }
+        if (results.length === 0) {
+          console.warn('⚠️ Trade-in yang baru saja disimpan tidak ditemukan di DB');
+          return res.status(404).json({ message: 'Trade-in yang baru saja disimpan tidak ditemukan' });
+        }
+
+        // Kembalikan data trade-in
+        res.status(201).json({ tradein: results[0] });
+      });
+    }
+  );
+});
+
+// GET /tradein/:id - ambil detail trade-in berdasarkan ID
+app.get('/tradein/:id', (req, res) => {
+  const tradeinId = req.params.id;
+
+  if (!tradeinId || isNaN(tradeinId)) {
+    return res.status(400).json({ message: 'ID trade-in tidak valid' });
+  }
+
+  const sql = 'SELECT * FROM tradeins WHERE id = ?';
+  db.query(sql, [tradeinId], (err, results) => {
+    if (err) {
+      console.error('❌ Error mengambil trade-in:', err);
+      return res.status(500).json({ message: 'Gagal mengambil data trade-in' });
+    }
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'Trade-in tidak ditemukan' });
+    }
+
+    res.json({ tradein: results[0] });
+  });
+});
+
+// ✅ Tambahan: GET /tradein/:id/suggestions - ambil rekomendasi mobil berdasarkan trade-in
+app.get('/tradein/:id/suggestions', (req, res) => {
+  const tradeinId = req.params.id;
+
+  const getTradeinSql = 'SELECT * FROM tradeins WHERE id = ?';
+  db.query(getTradeinSql, [tradeinId], (err, results) => {
+    if (err) {
+      console.error('❌ Error mengambil data trade-in:', err);
+      return res.status(500).json({ message: 'Gagal mengambil data trade-in' });
+    }
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'Data trade-in tidak ditemukan' });
+    }
+
+    const tradein = results[0];
+    const { initial_price, min_budget, max_budget } = tradein;
+
+    const getRecommendedCarsSql = `
+      SELECT *, (price - ?) AS adjusted_price
+      FROM cars
+      WHERE price BETWEEN ? AND ?
+    `;
+    db.query(getRecommendedCarsSql, [initial_price, min_budget, max_budget], (err, cars) => {
+      if (err) {
+        console.error('❌ Error mengambil rekomendasi mobil:', err);
+        return res.status(500).json({ message: 'Gagal mengambil rekomendasi mobil' });
+      }
+
+      res.json({ recommendedCars: cars });
+    });
+  });
+});
+
+// Ambil semua jadwal
+app.get('/api/schedules', (req, res) => {
+  const sql = 'SELECT user_id AS userId, schedule_date AS date FROM user_schedules';
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error('❌ Gagal ambil jadwal:', err);
+      return res.status(500).json({ message: 'Gagal ambil jadwal' });
+    }
+
+    console.log('📤 Mengirim data jadwal:', results);
+    res.json(results);
+  });
+});
+
+// Ajukan jadwal (POST)
+app.post('/api/schedules', (req, res) => {
+  const { userId, date } = req.body;
+
+  console.log('📥 Data diterima:', req.body);
+
+  if (!userId || !date) {
+    return res.status(400).json({ message: 'userId dan date wajib diisi.' });
+  }
+
+  const sql = 'INSERT INTO user_schedules (user_id, schedule_date) VALUES (?, ?)';
+  db.query(sql, [userId, date], (err, result) => {
+    if (err) {
+      console.error('❌ Error saat menyimpan jadwal:', err);
+      return res.status(500).json({ message: 'Gagal menyimpan jadwal.' });
+    }
+
+    console.log('✅ Jadwal berhasil disimpan:', result);
+    res.status(201).json({ message: 'Jadwal berhasil disimpan', id: result.insertId });
+  });
+});
+
 app.listen(port, () => {
-  console.log(`🌐 Server running: http://localhost:${port}`);
+  console.log(`🚀 Server berjalan di http://localhost:${port}`);
 });

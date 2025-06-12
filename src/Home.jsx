@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Sidebar from "./component/Navbar";
+import { Link } from "react-router-dom"; 
 import "./Home.css";
 
 const carTypes = [
@@ -109,9 +110,13 @@ export default function Home() {
                   <p className="price">
                     Rp. {Number(car.price).toLocaleString("id-ID")}
                   </p>
-                  <a href={`/car/${car.id}`} className="detail-link">
+                 <Link
+                    to={`/car/${car.id}`}
+                    state={{ car }}
+                    className="detail-link"
+                  >
                     View Detail
-                  </a>
+                  </Link>
                 </div>
               </div>
             ))

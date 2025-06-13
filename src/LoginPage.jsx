@@ -28,7 +28,15 @@ const LoginPage = ({ onSwitchToSignup, onLoginSuccess }) => {
         localStorage.setItem("user", JSON.stringify(data.user));
 
         onLoginSuccess(data.user);
-        navigate("/Home");
+
+        // Arahkan berdasarkan role
+        if (data.user.role === "admin") {
+          navigate("/admin");
+        } else if (data.user.role === "users") {
+          navigate("/");
+        } else {
+          alert("Peran pengguna tidak dikenali.");
+        }
       } else {
         alert("Login gagal: " + data.message);
       }
@@ -37,6 +45,7 @@ const LoginPage = ({ onSwitchToSignup, onLoginSuccess }) => {
       alert("Tidak bisa terhubung ke server");
     }
   };
+
 
   return (
     <div

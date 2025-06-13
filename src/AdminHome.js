@@ -1,54 +1,91 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import "./AdminHome.css";
+import { Link } from "react-router-dom";
 
-const AdminHome = () => {
+export default function AdminHome() {
   const [cars, setCars] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  // Ambil data mobil dari backend
-  const fetchCars = async () => {
-    try {
-      const response = await axios.get('http://localhost:5000/admin/cars');
-      setCars(response.data.cars);
-      setLoading(false);
-    } catch (error) {
-      console.error('Gagal mengambil data mobil:', error);
-      setLoading(false);
-    }
-  };
+  const [error, setError] = useState("");
 
   useEffect(() => {
     fetchCars();
   }, []);
 
+  const fetchCars = () => {
+    axios
+      .get("http://localhost:5000/cars")
+      .then((res) => {
+        setCars(res.data);
+      })
+      .catch((err) => {
+        console.error("Gagal mengambil data mobil:", err);
+        setError("Gagal mengambil data mobil.");
+      });
+  };
+
+  const handleDelete = async (id) => {
+    const confirm = window.confirm("Apakah kamu yakin ingin menghapus mobil ini?");
+    if (!confirm) return;
+
+    try {
+      await axios.delete(`http://localhost:5000/cars/${id}`);
+      setCars((prevCars) => prevCars.filter((car) => car.id !== id));
+    } catch (err) {
+      console.error("Gagal menghapus mobil:", err);
+      alert("Terjadi kesalahan saat menghapus mobil.");
+    }
+  };
+
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Daftar Mobil</h1>
-      {loading ? (
-        <p>Memuat data mobil...</p>
+    <div className="admin-home">
+      <h1>Daftar Mobil</h1>
+
+      {error && <p className="error">{error}</p>}
+
+      {cars.length === 0 ? (
+        <p>Tidak ada data mobil yang tersedia.</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="admin-cars-container">
           {cars.map((car) => (
-            <div
-              key={car.id}
-              className="border p-4 rounded shadow bg-white"
-            >
-              <h2 className="text-lg font-semibold">{car.name}</h2>
-              <p className="text-sm">Tipe: {car.type}</p>
-              <p className="text-sm">Harga: Rp {car.price.toLocaleString()}</p>
-              <p className="text-sm">Kegunaan: {car.utility}</p>
-              <button
-                onClick={() => console.log(`Hapus mobil id: ${car.id}`)}
-                className="mt-2 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-              >
-                Hapus
-              </button>
+            <div key={car.id} className="admin-car-card">
+              <img
+                src={car.image || "/default-car.png"}
+                alt={car.name}
+                className="admin-car-image"
+              />
+              <div className="admin-car-info">
+                <h3>{car.name}</h3>
+                <p>{car.description}</p>
+                <p>
+                  <strong>Harga:</strong> Rp.{" "}
+                  {Number(car.price).toLocaleString("id-ID")}
+                </p>
+                <p>
+                  <strong>Rating:</strong> {car.rating || "N/A"} ⭐
+                </p>
+                <p>
+                  <strong>Tipe:</strong> {car.type}
+                </p>
+                <div className="admin-actions">
+                  <button className="btn-edit">✏️ Edit</button>
+                  <button
+                    className="btn-delete"
+                    onClick={() => handleDelete(car.id)}
+                  >
+                    🗑️ Hapus
+                  </button>
+                </div>
+              </div>
             </div>
           ))}
         </div>
       )}
+
+      <div className="add-car-button">
+        <Link to="/admin/add-car" className="btn-add">
+          + Tambah Kendaraan
+        </Link>
+      </div>
     </div>
   );
-};
-
-export default AdminHome;
+}

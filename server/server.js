@@ -367,51 +367,31 @@ app.post('/api/schedules', (req, res) => {
   });
 });
 
-app.get('/admin/cars', (req, res) => {
-  const sql = 'SELECT * FROM cars ORDER BY id DESC';
-  db.query(sql, (err, results) => {
-    if (err) {
-      console.error('❌ Error mengambil data mobil:', err);
-      return res.status(500).json({ message: 'Gagal mengambil data mobil' });
-    }
-    res.json({ cars: results });
-  });
-});
+// Disini Endpointnya Delete e <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+app.delete("/cars/:id", async (req, res) => {
+  const { id } = req.params;
 
-app.post('/admin/cars', (req, res) => {
-  const { name, type, price, utility } = req.body;
-
-  if (!name || !type || !price || !utility) {
-    return res.status(400).json({ message: 'Mohon isi semua data kendaraan' });
+  try {
+    await db.query("DELETE FROM cars WHERE id = $1", [parseInt(id)]);
+    res.status(200).json({ message: "Mobil berhasil dihapus" });
+  } catch (error) {
+    console.error("Gagal menghapus mobil:", error);
+    res.status(500).json({ message: "Terjadi kesalahan saat menghapus mobil" });
   }
-
-  const sql = 'INSERT INTO cars (name, type, price, utility) VALUES (?, ?, ?, ?)';
-  db.query(sql, [name, type, price, utility], (err, result) => {
-    if (err) {
-      console.error('❌ Error menambah mobil:', err);
-      return res.status(500).json({ message: 'Gagal menambah kendaraan' });
-    }
-    res.status(201).json({ message: 'Kendaraan berhasil ditambahkan', id: result.insertId });
-  });
 });
 
-app.delete('/admin/cars/:id', (req, res) => {
-  const carId = req.params.id;
-  const sql = 'DELETE FROM cars WHERE id = ?';
+const handleDelete = async (id) => {
+  if (!window.confirm("Yakin ingin menghapus mobil ini?")) return;
 
-  db.query(sql, [carId], (err, result) => {
-    if (err) {
-      console.error('❌ Error menghapus mobil:', err);
-      return res.status(500).json({ message: 'Gagal menghapus kendaraan' });
-    }
+  try {
+    await axios.delete(`http://localhost:5000/cars/${id}`);
+    setCars(cars.filter((car) => car.id !== id));
+  } catch (err) {
+    console.error("Gagal menghapus mobil:", err);
+    alert("Gagal menghapus mobil.");
+  }
+};
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'Kendaraan tidak ditemukan' });
-    }
-
-    res.json({ message: 'Kendaraan berhasil dihapus' });
-  });
-});
 
 
 app.listen(port, () => {

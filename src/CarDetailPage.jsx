@@ -12,7 +12,6 @@ export default function CarDetail() {
 
   // Ambil data user dari localStorage
   const user = JSON.parse(localStorage.getItem("user"));
-  const userName = user?.name || "Guest";
 
   if (!car) {
     return (
@@ -27,43 +26,59 @@ export default function CarDetail() {
     );
   }
 
-  // Gunakan colors dari data car, jika tidak ada gunakan array kosong
-  const colors = car.colors || [];
+  // Parsing colors dari JSON string ke array
+  let colors = [];
+  try {
+    colors = car.colors ? JSON.parse(car.colors) : [];
+  } catch (error) {
+    colors = [];
+  }
 
   return (
     <>
       <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
-      <div className="main-content1" style={{ marginLeft: sidebarOpen ? "250px" : "80px" }}>
-        <img src={car.image || "/default-car.png"} alt={car.name} className="car-image" />
-        <div className="car-details">
-          <div className="header-bar">
-            <span>Hello, {userName}</span>
-            <div className="user-icon">👤</div>
-          </div>
+      <div
+        className="main-content1"
+        style={{ marginLeft: sidebarOpen ? "250px" : "0px", transition: "margin-left 0.3s ease" }}
+      >
+        {/* Header bar tetap di luar container gambar+deskripsi */}
+        <div className="topbar">
+          <p>Hello, {user ? user.name : "Guest"} 👤</p>
+        </div>
 
-          <h1>{car.name}</h1>
-          <p className="description">{car.description}</p>
+        {/* Grup gambar dan deskripsi */}
+        <div className="car-info-wrapper">
+          <img src={car.image || "/default-car.png"} alt={car.name} className="car-image" />
+          <div className="car-details">
+            <h1>{car.name}</h1>
+            <p className="description">{car.description}</p>
 
-          <div className="available-color">
-            <h4>Available Color</h4>
-            <div className="color-options">
-              {colors.map((color, index) => (
-                <div
-                  key={index}
-                  className="color-circle"
-                  style={{ backgroundColor: color }}
-                  title={color}
-                ></div>
-              ))}
+            <div className="available-color">
+              <h4>Available Color</h4>
+              <div className="color-options">
+                {colors.length === 0 ? (
+                  <p>Tidak ada warna tersedia</p>
+                ) : (
+                  colors.map((color, index) => (
+                    <div
+                      key={index}
+                      className="color-circle"
+                      style={{ backgroundColor: color }}
+                      title={color}
+                    ></div>
+                  ))
+                )}
+              </div>
             </div>
-          </div>
 
-          <div className="price-section">
-            <div className="old-price">Rp.200.000.000</div>
-            <div className="new-price">Rp.{car.price?.toLocaleString("id-ID")}</div>
-          </div>
+            <div className="price-section">
+              <div className="new-price">
+                Rp.{car.price?.toLocaleString("id-ID")}
+              </div>
+            </div>
 
-          <button className="tradein-button">Trade-in</button>
+            <button className="tradein-button">Trade-in</button>
+          </div>
         </div>
       </div>
     </>

@@ -3,9 +3,11 @@
 // import { Routes, Route, Navigate } from "react-router-dom";
 // import LoginPage from "./LoginPage";
 // import SignupForm from "./SignupForm";
+// import Home from "./Home";
 // import SearchPage from "./SearchPage";
 // import ResultPage from "./ResultPage";
-// import CarDetailPage from "./CarDetailPage"; // <--- Import halaman detail mobil
+// import CarDetailPage from "./CarDetailPage";
+// import TradeInForm from "./TradeInForm"; // ⬅️ Import halaman Trade-in
 
 // export default function App() {
 //   const [isLogin, setIsLogin] = useState(true);
@@ -37,9 +39,11 @@
 
 //   return (
 //     <Routes>
-//       <Route path="/" element={<SearchPage user={user} />} />
+//       <Route path="/" element={<Home user={user} />} />
+//       <Route path="/search" element={<SearchPage user={user} />} />
 //       <Route path="/results" element={<ResultPage />} />
-//       <Route path="/car/:id" element={<CarDetailPage />} /> {/* <-- Routing detail */}
+//       <Route path="/car/:id" element={<CarDetailPage />} />
+//       <Route path="/tradein" element={<TradeInForm user={user} />} /> {/* ⬅️ ROUTING TRADE-IN */}
 //       <Route path="*" element={<Navigate to="/" replace />} />
 //     </Routes>
 //   );
@@ -48,12 +52,17 @@
 
 import React, { useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
+
 import LoginPage from "./LoginPage";
 import SignupForm from "./SignupForm";
 import Home from "./Home";
 import SearchPage from "./SearchPage";
 import ResultPage from "./ResultPage";
 import CarDetailPage from "./CarDetailPage";
+import TradeInForm from "./TradeInForm";
+import TradeInResult from "./TradeInResult";
+import AjukanJadwal from "./AjukanJadwal"; // ⬅️ Tambahkan ini
+
 
 export default function App() {
   const [isLogin, setIsLogin] = useState(true);
@@ -89,7 +98,11 @@ export default function App() {
       <Route path="/search" element={<SearchPage user={user} />} />
       <Route path="/results" element={<ResultPage />} />
       <Route path="/car/:id" element={<CarDetailPage />} />
+      <Route path="/tradein" element={<TradeInForm user={user} />} />
+      <Route path="/tradein-result/:tradeinId" element={<TradeInResult />} />
       <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="/jadwal" element={<AjukanJadwal user={user} />} /> 
+
     </Routes>
   );
 }

@@ -7,25 +7,32 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
   const location = useLocation();
 
   const menus = [
-    { name: "Home", path: "/" },
-    { name: "Search", path: "/search" },
-  ];
+  { name: "Home", path: "/" },
+  { name: "Search", path: "/search" },
+  { name: "Trade-in", path: "/tradein" },
+  { name: "Ajukan Jadwal", path: "/jadwal" },  // ← tambah ini
+];
+
 
   const [activeMenu, setActiveMenu] = useState("");
 
   useEffect(() => {
-    if (location.pathname === "/") {
-      setActiveMenu("Home");
-    } else if (
-      location.pathname === "/search" ||
-      location.pathname === "/results" ||
-      location.pathname.startsWith("/car/")
-    ) {
-      setActiveMenu("Search");
-    } else {
-      setActiveMenu("");
-    }
-  }, [location.pathname]);
+  if (location.pathname === "/") {
+    setActiveMenu("Home");
+  } else if (
+    location.pathname === "/search" ||
+    location.pathname === "/results" ||
+    location.pathname.startsWith("/car/")
+  ) {
+    setActiveMenu("Search");
+  } else if (location.pathname === "/tradein") {
+    setActiveMenu("Trade-in");
+  } else if (location.pathname === "/jadwal") {
+    setActiveMenu("Ajukan Jadwal"); // ← tambahkan ini
+  } else {
+    setActiveMenu("");
+  }
+}, [location.pathname]);
 
   const handleMenuClick = (menu) => {
     setActiveMenu(menu.name);

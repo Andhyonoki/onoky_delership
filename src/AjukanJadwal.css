@@ -1,0 +1,143 @@
+/* Container utama */
+.jadwal-container {
+  display: flex;
+  transition: margin-left 0.3s ease;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #ffffff;
+  min-height: 100vh;
+}
+
+/* Jika sidebar terbuka, geser konten ke kanan */
+.jadwal-container.sidebar-open .jadwal-main-content {
+  margin-left: 250px;
+}
+
+/* Konten utama */
+.jadwal-main-content {
+  flex: 1;
+  padding: 40px 20px;
+  transition: margin-left 0.3s ease;
+}
+
+/* Box isi kalender */
+.jadwal-box {
+  max-width: 500px;
+  background-color: #1e1e1e;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  margin: 0 auto;
+  color: white;
+}
+
+/* Judul */
+.jadwal-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+/* Dropdown bulan dan tahun */
+.jadwal-controls {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.jadwal-controls select {
+  background-color: #333;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+}
+
+/* Label hari */
+.jadwal-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #aaa;
+}
+
+/* Baris minggu */
+.jadwal-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+/* Tanggal individual */
+.jadwal-day {
+  padding: 10px 0;
+  font-weight: 500;
+}
+
+/* Tanggal di luar bulan aktif */
+.jadwal-day.not-current {
+  color: #555;
+}
+
+/* Teks tanggal pengguna sendiri */
+.text-green {
+  color: #22c55e;
+  font-weight: bold;
+}
+
+/* Teks tanggal pengguna lain */
+.text-red {
+  color: #ff4d4d;
+  font-weight: bold;
+}
+
+/* Hover efek (opsional) */
+.jadwal-day:hover span {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Form input tanggal */
+.jadwal-form {
+  margin-top: 20px;
+  display: flex;
+  gap: 8px;
+  flex-direction: column;
+}
+
+.jadwal-form input[type="date"] {
+  background-color: #333;
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+}
+
+.jadwal-form button {
+  background-color: #4f46e5;
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.jadwal-form button:hover {
+  background-color: #4338ca;
+}
+
+/* Topbar (menampilkan nama user) */
+.topbar {
+  text-align: right;
+  margin-bottom: 20px;
+  font-size: 16px;
+  color: #ccc;
+}

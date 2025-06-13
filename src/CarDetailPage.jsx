@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { useLocation, useParams, Link } from "react-router-dom";
+import { useLocation, useParams, Link, useNavigate } from "react-router-dom"; // ✅ Import useNavigate
 import Sidebar from "./component/Navbar";
 import './CarDetailPage.css';
 
 export default function CarDetail() {
   const location = useLocation();
+  const navigate = useNavigate(); // ✅ Gunakan useNavigate
   const { car } = location.state || {};
   const { id } = useParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -41,7 +42,7 @@ export default function CarDetail() {
         className="main-content1"
         style={{ marginLeft: sidebarOpen ? "250px" : "0px", transition: "margin-left 0.3s ease" }}
       >
-        {/* Header bar tetap di luar container gambar+deskripsi */}
+        {/* Header bar */}
         <div className="topbar">
           <p>Hello, {user ? user.name : "Guest"} 👤</p>
         </div>
@@ -77,7 +78,13 @@ export default function CarDetail() {
               </div>
             </div>
 
-            <button className="tradein-button">Trade-in</button>
+            {/* Tombol Ajukan Jadwal */}
+            <button
+              className="tradein-button"
+              onClick={() => navigate("/jadwal", { state: { carId: car.id } })}
+            >
+              Ajukan Jadwal
+            </button>
           </div>
         </div>
       </div>

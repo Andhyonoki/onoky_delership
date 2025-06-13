@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import Sidebar from "./component/Navbar";
@@ -12,6 +13,17 @@ const monthNames = [
 ];
 
 export default function AjukanJadwal() {
+  const location = useLocation();
+  const { carId } = location.state || {};
+
+  useEffect(() => {
+    if (carId !== undefined) {
+      console.log("📦 carId diterima di AjukanJadwal:", carId);
+    } else {
+      console.warn("⚠️ carId TIDAK ditemukan di location.state!");
+    }
+  }, [carId]);
+
   const today = dayjs();
   const [month, setMonth] = useState(today.month());
   const [year, setYear] = useState(today.year());
@@ -19,7 +31,7 @@ export default function AjukanJadwal() {
   const [existingSchedules, setExistingSchedules] = useState([]);
   const [userSchedules, setUserSchedules] = useState([]);
   const [user, setUser] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
@@ -58,25 +70,6 @@ export default function AjukanJadwal() {
     }
   }, []);
 
-  const generateCalendar = (month, year) => {
-    const startDate = dayjs(`${year}-${month + 1}-01`).startOf("week");
-    const endDate = dayjs(`${year}-${month + 1}-01`).endOf("month").endOf("week");
-
-    const weeks = [];
-    let current = startDate;
-
-    while (current.isBefore(endDate, "day") || current.isSame(endDate, "day")) {
-      const week = [];
-      for (let i = 0; i < 7; i++) {
-        week.push(current);
-        current = current.add(1, "day");
-      }
-      weeks.push(week);
-    }
-
-    return weeks;
-  };
-
   const handleDateSubmit = async (e) => {
     e.preventDefault();
     if (!selectedDate || !user) return;
@@ -98,24 +91,54 @@ export default function AjukanJadwal() {
       return;
     }
 
+      const payload = {
+      date: formatted,
+      userId: user.id,
+      carId: carId !== undefined ? Number(carId) : null,
+    };
+
+
+    console.log("📤 Mengirim data jadwal ke backend:", payload);
+
     try {
       const res = await fetch("http://localhost:5000/api/schedules", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ date: formatted, userId: user.id }),
+        body: JSON.stringify(payload),
       });
 
       if (res.ok) {
         alert("Jadwal berhasil diajukan!");
         setSelectedDate("");
-        fetchSchedules(user.id); // Refresh jadwal
+        fetchSchedules(user.id);
       } else {
+        const error = await res.text();
+        console.error("Respon error:", error);
         alert("Gagal menyimpan jadwal.");
       }
     } catch (err) {
       console.error("Gagal menyimpan jadwal:", err);
       alert("Terjadi kesalahan saat menyimpan jadwal.");
     }
+  };
+
+  const generateCalendar = (month, year) => {
+    const startDate = dayjs(`${year}-${month + 1}-01`).startOf("week");
+    const endDate = dayjs(`${year}-${month + 1}-01`).endOf("month").endOf("week");
+
+    const weeks = [];
+    let current = startDate;
+
+    while (current.isBefore(endDate, "day") || current.isSame(endDate, "day")) {
+      const week = [];
+      for (let i = 0; i < 7; i++) {
+        week.push(current);
+        current = current.add(1, "day");
+      }
+      weeks.push(week);
+    }
+
+    return weeks;
   };
 
   const calendar = generateCalendar(month, year);
@@ -169,7 +192,6 @@ export default function AjukanJadwal() {
                 let className = "jadwal-day";
                 if (!isCurrentMonth) className += " not-current";
 
-                // Warna angka
                 let textColor = "";
                 if (isUserDate) textColor = "text-green";
                 else if (isScheduled) textColor = "text-red";

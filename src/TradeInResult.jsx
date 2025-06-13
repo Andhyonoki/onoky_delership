@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import './TradeInResult.css';
+import "./TradeInResult.css";
 
 const TradeInResult = () => {
   const { tradeinId } = useParams();
@@ -12,6 +12,21 @@ const TradeInResult = () => {
   const [loadingRecommendations, setLoadingRecommendations] = useState(true);
   const [error, setError] = useState(null);
 
+  const API_BASE = "http://localhost:5000";
+  const PLACEHOLDER = "https://via.placeholder.com/250x150?text=No+Image";
+
+  // Helper untuk membangun URL gambar
+  const buildImageUrl = (value) => {
+    if (!value) return PLACEHOLDER;
+    if (value.startsWith("http")) {
+      const m = value.match(/^https?:\/\/drive\.google\.com\/file\/d\/([\w-]+)\//);
+      if (m) return `https://drive.google.com/uc?export=view&id=${m[1]}`;
+      return value;
+    }
+    return `${API_BASE}/uploads/${value.replace(/^\\+/, "")}`;
+  };
+
+  // Fetch data trade‑in & rekomendasi
   useEffect(() => {
     if (!tradeinId) {
       setError("ID trade-in tidak ditemukan.");
@@ -20,43 +35,35 @@ const TradeInResult = () => {
       return;
     }
 
-    const fetchTradein = async () => {
+    const getTradein = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/tradein/${tradeinId}`);
-        if (!res.ok) {
-          throw new Error("Data trade-in tidak ditemukan.");
-        }
-
+        const res = await fetch(`${API_BASE}/tradein/${tradeinId}`);
+        if (!res.ok) throw new Error("Data trade-in tidak ditemukan.");
         const data = await res.json();
-        if (!data || !data.tradein || Object.keys(data.tradein).length === 0) {
-          throw new Error("Data trade-in tidak ditemukan.");
-        }
-
-        setTradein(data.tradein); // ✅ Ambil objek tradein di dalam response
+        if (!data?.tradein) throw new Error("Data trade-in tidak ditemukan.");
+        setTradein(data.tradein);
       } catch (err) {
-        setError(err.message || "Gagal mengambil data trade-in.");
+        setError(err.message);
       } finally {
         setLoadingTradein(false);
       }
     };
 
-    const fetchRecommendations = async () => {
+    const getRecommendations = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/tradein/${tradeinId}/suggestions`);
-        if (!res.ok) {
-          throw new Error("Gagal mengambil rekomendasi mobil.");
-        }
+        const res = await fetch(`${API_BASE}/tradein/${tradeinId}/suggestions`);
+        if (!res.ok) throw new Error("Gagal mengambil rekomendasi mobil.");
         const data = await res.json();
         setRecommendedCars(data.recommendedCars || []);
       } catch (err) {
-        setError(err.message || "Gagal mengambil rekomendasi mobil.");
+        setError(err.message);
       } finally {
         setLoadingRecommendations(false);
       }
     };
 
-    fetchTradein();
-    fetchRecommendations();
+    getTradein();
+    getRecommendations();
   }, [tradeinId]);
 
   if (loadingTradein || loadingRecommendations) return <p>Loading...</p>;
@@ -75,95 +82,66 @@ const TradeInResult = () => {
   const initialPrice = Number(tradein.initial_price);
   const minBudget = Number(tradein.min_budget);
   const maxBudget = Number(tradein.max_budget);
-
-  const potonganMin = minBudget - initialPrice;
-  const potonganMax = maxBudget - initialPrice;
-
-  const imageUrl =
-    tradein.car_image && typeof tradein.car_image === "string"
-      ? `http://localhost:5000/uploads/${tradein.car_image}`
-      : "https://via.placeholder.com/400x300?text=No+Image";
+  const imageUrl = buildImageUrl(tradein.car_image);
 
   return (
-    <div className="container" style={{ padding: "20px" }}>
+    <div className="container">
       <h1>Hasil Trade-In</h1>
 
-      <div className="car-card" style={{ marginBottom: "2rem" }}>
+      {/* ---------- Kartu hasil trade‑in ---------- */}
+      <div className="car-card tradein-card">
         <img
           src={imageUrl}
           alt="Gambar Mobil Trade-In"
-          style={{ width: "100%", maxWidth: "400px", borderRadius: "8px" }}
-          onError={(e) => (e.target.src = "https://via.placeholder.com/400x300?text=No+Image")}
+          className="tradein-image"
+          onError={(e) => (e.target.src = PLACEHOLDER)}
         />
+
         <p>
           <strong>Deskripsi:</strong> {tradein.description || "-"}
         </p>
-
         <hr />
-
         <p>
-          <strong>Harga Awal (Input User):</strong>{" "}
-          Rp {isNaN(initialPrice) ? "-" : initialPrice.toLocaleString("id-ID")}
+          <strong>Harga Awal:</strong> Rp {initialPrice.toLocaleString("id-ID")}
         </p>
         <p>
-          <strong>Budget Minimum:</strong>{" "}
-          Rp {isNaN(minBudget) ? "-" : minBudget.toLocaleString("id-ID")}
+          <strong>Budget Minimum:</strong> Rp {minBudget.toLocaleString("id-ID")}
         </p>
         <p>
-          <strong>Budget Maksimum:</strong>{" "}
-          Rp {isNaN(maxBudget) ? "-" : maxBudget.toLocaleString("id-ID")}
-        </p>
-
-        <p>
-          <strong>Harga setelah dipotong dengan harga awal:</strong>
-        </p>
-        <p>
-          Minimum: Rp {isNaN(potonganMin) ? "-" : potonganMin.toLocaleString("id-ID")}
-        </p>
-        <p>
-          Maksimum: Rp {isNaN(potonganMax) ? "-" : potonganMax.toLocaleString("id-ID")}
+          <strong>Budget Maksimum:</strong> Rp {maxBudget.toLocaleString("id-ID")}
         </p>
 
         <button onClick={() => navigate(-1)}>Kembali</button>
       </div>
 
+      {/* ---------- Rekomendasi ---------- */}
       <h2>Rekomendasi Mobil Sesuai Budget</h2>
 
       {recommendedCars.length === 0 ? (
         <p>Tidak ada rekomendasi mobil sesuai budget.</p>
       ) : (
-        <div
-          className="recommended-cars"
-          style={{ display: "flex", flexWrap: "wrap", gap: "1rem" }}
-        >
+        <div className="recommended-cars">
           {recommendedCars.map((car) => {
-            const carImageUrl =
-              car.image && typeof car.image === "string"
-                ? `http://localhost:5000/uploads/${car.image}`
-                : "https://via.placeholder.com/250x150?text=No+Image";
+            const originalPrice = Number(car.price);
+            const newPrice = originalPrice - initialPrice;
 
             return (
-              <div
-                key={car.id}
-                className="car-card"
-                style={{
-                  border: "1px solid #ccc",
-                  padding: "1rem",
-                  width: "250px",
-                  borderRadius: "8px",
-                }}
-              >
+              <div key={car.id} className="car-card">
                 <img
-                  src={carImageUrl}
-                  alt={`Gambar mobil ${car.name || "rekomendasi"}`}
-                  style={{ width: "100%", height: "150px", objectFit: "cover", borderRadius: "4px" }}
-                  onError={(e) => (e.target.src = "https://via.placeholder.com/250x150?text=No+Image")}
+                  src={buildImageUrl(car.image)}
+                  alt={car.name || "rekomendasi"}
+                  onError={(e) => (e.target.src = PLACEHOLDER)}
                 />
                 <h3>{car.name || "-"}</h3>
                 <p>{car.description || "-"}</p>
                 <p>
-                  <strong>Harga:</strong>{" "}
-                  Rp {car.price ? Number(car.price).toLocaleString("id-ID") : "-"}
+                  <span className="price-strike">
+                    Rp {originalPrice.toLocaleString("id-ID")}
+                  </span>
+                  <br />
+                  <span className="price-new">
+                    Rp {newPrice.toLocaleString("id-ID")}
+                  </span>
                 </p>
               </div>
             );

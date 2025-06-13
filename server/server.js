@@ -336,7 +336,7 @@ app.get('/api/schedules', (req, res) => {
 
 // Ajukan jadwal (POST)
 app.post('/api/schedules', (req, res) => {
-  const { userId, date } = req.body;
+  const { userId, date, carId } = req.body;
 
   console.log('📥 Data diterima:', req.body);
 
@@ -344,8 +344,16 @@ app.post('/api/schedules', (req, res) => {
     return res.status(400).json({ message: 'userId dan date wajib diisi.' });
   }
 
-  const sql = 'INSERT INTO user_schedules (user_id, schedule_date) VALUES (?, ?)';
-  db.query(sql, [userId, date], (err, result) => {
+  const sql = `
+    INSERT INTO user_schedules (user_id, schedule_date, car_id)
+    VALUES (?, ?, ?)
+  `;
+
+  const values = [userId, date, carId !== undefined ? carId : null];
+
+  console.log("🧾 Nilai yang dikirim ke query:", values);
+
+  db.query(sql, values, (err, result) => {
     if (err) {
       console.error('❌ Error saat menyimpan jadwal:', err);
       return res.status(500).json({ message: 'Gagal menyimpan jadwal.' });

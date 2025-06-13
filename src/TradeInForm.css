@@ -1,4 +1,4 @@
-/* Container form trade-in */
+/* Container utama form trade-in */
 .tradein-container {
   background-color: #fff;
   padding: 30px;
@@ -6,43 +6,38 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Judul */
+/* Judul form */
 .tradein-title {
   margin-bottom: 25px;
   font-size: 24px;
   font-weight: bold;
 }
 
-/* Setiap grup input */
+/* Grup input */
 .tradein-group {
   margin-bottom: 25px;
   display: flex;
   flex-direction: column;
 }
 
-/* Label umum */
 .tradein-group label {
   font-weight: 600;
   margin-bottom: 8px;
 }
 
-/* Style input, select, textarea */
-.tradein-group input[type="number"],
-.tradein-group input[type="text"],
-.tradein-group select,
-.tradein-group textarea {
+/* Input, textarea, dan select */
+.tradein-group :is(input[type="number"], input[type="text"], select, textarea) {
   width: 100%;
   padding: 12px 14px;
-  border: 1px solid #000;
+  border: 1px solid #ccc;
   border-radius: 8px;
   font-size: 15px;
   box-sizing: border-box;
   outline: none;
-  color: black;
-  background-color: white;
+  color: #222;
+  background-color: #fff;
 }
 
-/* Style textarea */
 .tradein-group textarea {
   min-height: 120px;
   resize: vertical;
@@ -55,37 +50,34 @@
   gap: 15px;
 }
 
-/* Label upload file */
 .tradein-group.upload-file label {
   margin-bottom: 0;
   white-space: nowrap;
 }
 
-/* Input file */
 .tradein-group input[type="file"] {
   padding: 8px;
 }
 
-/* Nama file */
-.file-name {
+.tradein-file-name {
   font-size: 14px;
   color: #666;
   margin-top: 6px;
 }
 
-/* Price range container */
-.price-range {
+/* Rentang harga */
+.tradein-price-range {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.price-range select {
+.tradein-price-range select {
   flex: 1;
 }
 
 /* Tombol review */
-.review-button {
+.tradein-review-button {
   padding: 12px 24px;
   background-color: #000;
   color: white;
@@ -96,24 +88,35 @@
   transition: background 0.3s ease;
 }
 
-.review-button:hover {
+.tradein-review-button:hover {
   background-color: #0056b3;
 }
 
-/* Preview section */
-.preview-container {
+/* Pratinjau */
+.tradein-preview-container {
   background-color: #f5f5f5;
   padding: 25px;
   border-radius: 12px;
   font-size: 16px;
 }
 
-.preview-container p {
+.tradein-preview-container p {
   margin-bottom: 10px;
 }
 
-/* Tombol kembali */
-.preview-container button {
+/* Gambar pratinjau – dibatasi agar tidak terlalu besar */
+.preview-image,
+.tradein-preview-image {
+  width: 100%;          /* responsif pada container */
+  max-width: 300px;     /* batasi lebar maksimal */
+  height: auto;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  margin-top: 10px;
+}
+
+.tradein-preview-container button {
   padding: 10px 20px;
   background-color: #6c757d;
   color: white;
@@ -124,11 +127,11 @@
   margin-top: 20px;
 }
 
-.preview-container button:hover {
+.tradein-preview-container button:hover {
   background-color: #5a6268;
 }
 
-/* Responsive untuk layar kecil */
+/* Responsive */
 @media (max-width: 768px) {
   .tradein-container {
     padding: 20px;
@@ -137,5 +140,14 @@
   .tradein-group.upload-file {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .tradein-price-range {
+    flex-direction: column;
+  }
+
+  .preview-image,
+  .tradein-preview-image {
+    max-width: 100%; /* di mobile, biarkan penuh container namun tetap responsif */
   }
 }

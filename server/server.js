@@ -368,17 +368,41 @@ app.post('/api/schedules', (req, res) => {
 });
 
 // Disini Endpointnya Delete e <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-app.delete("/cars/:id", async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    await db.query("DELETE FROM cars WHERE id = $1", [parseInt(id)]);
-    res.status(200).json({ message: "Mobil berhasil dihapus" });
-  } catch (error) {
-    console.error("Gagal menghapus mobil:", error);
-    res.status(500).json({ message: "Terjadi kesalahan saat menghapus mobil" });
+app.delete("/cars/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    return res.status(400).json({ message: "ID tidak valid" });
   }
+
+  db.query("DELETE FROM cars WHERE id = ?", [id], (err, result) => {
+    if (err) {
+      console.error("Gagal menghapus mobil:", err);
+      return res.status(500).json({ message: "Terjadi kesalahan saat menghapus mobil" });
+    }
+    res.status(200).json({ message: "Mobil berhasil dihapus" });
+  });
 });
+
+// Disini Endpointnya Tambah mobil, janganko kecca i dulu  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+app.post("/cars", (req, res) => {
+  const { name, description, price, type, rating, image } = req.body;
+
+  if (!name || !price) {
+    return res.status(400).json({ message: "Nama dan harga wajib diisi" });
+  }
+
+  const query = `INSERT INTO cars (name, description, price, type, rating, image)
+                 VALUES (?, ?, ?, ?, ?, ?)`;
+
+  db.query(query, [name, description, price, type, rating, image], (err, result) => {
+    if (err) {
+      console.error("Gagal menambahkan mobil:", err);
+      return res.status(500).json({ message: "Gagal menambahkan mobil" });
+    }
+    res.status(201).json({ message: "Mobil berhasil ditambahkan" });
+  });
+});
+
 
 const handleDelete = async (id) => {
   if (!window.confirm("Yakin ingin menghapus mobil ini?")) return;

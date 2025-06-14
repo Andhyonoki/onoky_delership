@@ -3,16 +3,16 @@
   font-family: Arial, sans-serif;
   display: flex;
   flex-direction: column;
-  align-items: center; /* Center horizontally */
-  justify-content: center; /* Center vertically */
-  min-height: 100vh; /* Ensure it takes full height of the viewport */
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
 }
 
 .admin-cars-container {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
-  justify-content: center; /* Center the cards within the container */
+  justify-content: center;
 }
 
 .admin-car-card {
@@ -22,6 +22,11 @@
   width: 300px;
   background: #f9f9f9;
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.admin-car-card:hover {
+  transform: scale(1.02);
 }
 
 .admin-car-image {
@@ -41,6 +46,7 @@
   justify-content: space-between;
 }
 
+/* Updated btn-edit to look like btn-delete with distinct coloring */
 .btn-edit,
 .btn-delete {
   padding: 6px 12px;
@@ -48,16 +54,32 @@
   cursor: pointer;
   font-size: 14px;
   border-radius: 6px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  transition: background-color 0.3s ease;
 }
 
 .btn-edit {
-  background-color: #f0c040;
+  background-color: #007bff; /* Blue color for edit */
   color: white;
+}
+
+.btn-edit:hover,
+.btn-edit:focus {
+  background-color: #0056b3; /* Darker blue on hover */
+  outline: none;
 }
 
 .btn-delete {
   background-color: #d9534f;
   color: white;
+}
+
+.btn-delete:hover,
+.btn-delete:focus {
+  background-color: #c9302c;
+  outline: none;
 }
 
 .add-car-button {
@@ -72,4 +94,15 @@
   border-radius: 8px;
   text-decoration: none;
   font-weight: bold;
+  transition: background-color 0.3s;
 }
+
+.btn-add:hover {
+  background-color: #218838;
+}
+
+.error {
+  color: red;
+  margin-top: 10px;
+}
+

@@ -6,44 +6,47 @@ import { Link } from "react-router-dom";
 export default function AdminHome() {
   const [cars, setCars] = useState([]);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true); // Loading state
 
   useEffect(() => {
     fetchCars();
   }, []);
 
-  const fetchCars = () => {
-    axios
-      .get("http://localhost:5000/cars")
-      .then((res) => {
-        setCars(res.data);
-      })
-      .catch((err) => {
-        console.error("Gagal mengambil data mobil:", err);
-        setError("Gagal mengambil data mobil.");
-      });
+  const fetchCars = async () => {
+    try {
+      const response = await axios.get("https://4b61-140-213-74-72.ngrok-free.app/cars");
+      setCars(response.data);
+    } catch (err) {
+      console.error("Failed to fetch car data:", err);
+      setError("Failed to fetch car data. Please try again later.");
+    } finally {
+      setLoading(false); // Set loading to false after fetching
+    }
   };
 
   const handleDelete = async (id) => {
-    const confirm = window.confirm("Apakah kamu yakin ingin menghapus mobil ini?");
-    if (!confirm) return;
+    const confirmDelete = window.confirm("Kendaraan akan dihapus?");
+    if (!confirmDelete) return;
 
     try {
-      await axios.delete(`http://localhost:5000/cars/${id}`);
+      await axios.delete(`https://4b61-140-213-74-72.ngrok-free.app/cars/${id}`);
       setCars((prevCars) => prevCars.filter((car) => car.id !== id));
     } catch (err) {
-      console.error("Gagal menghapus mobil:", err);
-      alert("Terjadi kesalahan saat menghapus mobil.");
+      console.error("Failed to delete car:", err);
+      alert("An error occurred while deleting the car. Please try again.");
     }
   };
 
   return (
     <div className="admin-home">
-      <h1>Daftar Mobil</h1>
+      <h1>Car List</h1>
+
+      {loading && <p>Loading cars...</p>} {/* Loading message */}
 
       {error && <p className="error">{error}</p>}
 
-      {cars.length === 0 ? (
-        <p>Tidak ada data mobil yang tersedia.</p>
+      {cars.length === 0 && !loading ? (
+        <p>No cars available.</p>
       ) : (
         <div className="admin-cars-container">
           {cars.map((car) => (
@@ -57,22 +60,25 @@ export default function AdminHome() {
                 <h3>{car.name}</h3>
                 <p>{car.description}</p>
                 <p>
-                  <strong>Harga:</strong> Rp.{" "}
+                  <strong>Price:</strong> Rp.{" "}
                   {Number(car.price).toLocaleString("id-ID")}
                 </p>
                 <p>
                   <strong>Rating:</strong> {car.rating || "N/A"} ⭐
                 </p>
                 <p>
-                  <strong>Tipe:</strong> {car.type}
+                  <strong>Type:</strong> {car.type}
                 </p>
                 <div className="admin-actions">
-                  <button className="btn-edit">✏️ Edit</button>
+                  <Link to={`/admin/edit-car/${car.id}`} className="btn-edit" aria-label={`Edit ${car.name}`}>
+                    Edit
+                  </Link>
                   <button
                     className="btn-delete"
                     onClick={() => handleDelete(car.id)}
+                    aria-label={`Delete ${car.name}`}
                   >
-                    🗑️ Hapus
+                    Delete
                   </button>
                 </div>
               </div>
@@ -82,11 +88,10 @@ export default function AdminHome() {
       )}
 
       <div className="add-car-button">
-        <Link to="/admin/add-car" className="btn-add">
-          + Tambah Kendaraan
+        <Link to="/admin/add-car" className="btn-add" aria-label="Add a new vehicle">
+          + Add Vehicle
         </Link>
       </div>
-
     </div>
   );
 }

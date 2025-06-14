@@ -60,7 +60,7 @@ export default function SearchPage() {
     };
 
     try {
-      const response = await fetch("http://localhost:5000/search", {
+      const response = await fetch("https://4b61-140-213-74-72.ngrok-free.app/search", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

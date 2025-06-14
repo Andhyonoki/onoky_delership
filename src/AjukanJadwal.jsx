@@ -25,7 +25,7 @@ export default function AjukanJadwal() {
 
   const fetchSchedules = async (userId) => {
     try {
-      const res = await fetch("http://localhost:5000/api/schedules");
+      const res = await fetch("https://4b61-140-213-74-72.ngrok-free.app/api/schedules");
       const data = await res.json();
 
       if (Array.isArray(data)) {
@@ -99,7 +99,7 @@ export default function AjukanJadwal() {
     }
 
     try {
-      const res = await fetch("http://localhost:5000/api/schedules", {
+      const res = await fetch("https://4b61-140-213-74-72.ngrok-free.app/api/schedules", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ date: formatted, userId: user.id }),

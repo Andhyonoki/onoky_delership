@@ -403,6 +403,37 @@ app.post("/cars", (req, res) => {
   });
 });
 
+// Ambil data mobil berdasarkan ID ini e
+app.get("/cars/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [result] = await db.query("SELECT * FROM cars WHERE id = ?", [id]);
+    if (result.length === 0) return res.status(404).json({ message: "Mobil tidak ditemukan" });
+    res.json(result[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Gagal mengambil data mobil" });
+  }
+});
+
+// Update data mobil berdasarkan ID e
+app.put("/cars/:id", async (req, res) => {
+  const { id } = req.params;
+  const { name, description, price, type, rating, image } = req.body;
+
+  try {
+    await db.query(
+      "UPDATE cars SET name = ?, description = ?, price = ?, type = ?, rating = ?, image = ? WHERE id = ?",
+      [name, description, price, type, rating, image, id]
+    );
+    res.status(200).json({ message: "Mobil berhasil diperbarui" });
+  } catch (error) {
+    console.error("Gagal memperbarui mobil:", error);
+    res.status(500).json({ message: "Terjadi kesalahan saat update mobil" });
+  }
+});
+
+
 
 const handleDelete = async (id) => {
   if (!window.confirm("Yakin ingin menghapus mobil ini?")) return;

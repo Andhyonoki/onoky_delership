@@ -63,6 +63,7 @@ import TradeInForm from "./TradeInForm";
 import TradeInResult from "./TradeInResult";
 import AjukanJadwal from "./AjukanJadwal";
 import AddCar from "./AddCar";
+import EditCar from "./EditCar";
 
 export default function App() {
   const [isLogin, setIsLogin] = useState(true);
@@ -112,6 +113,7 @@ export default function App() {
       <Route path="/admin" element={<AdminHome user={user} />} />
       <Route path="*" element={<Navigate to="/" replace />} />
       <Route path="/admin/add-car" element={<AddCar />} />
+      <Route path="/admin/edit-car/:id" element={<EditCar />} />
     </Routes>
   );
 }

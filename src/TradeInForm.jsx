@@ -53,7 +53,7 @@ const TradeInForm = () => {
     formData.append('description', description);
 
     try {
-      const response = await axios.post('http://localhost:5000/tradein', formData, {
+      const response = await axios.post('https://4b61-140-213-74-72.ngrok-free.app/tradein', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 

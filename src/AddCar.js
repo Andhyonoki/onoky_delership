@@ -26,7 +26,7 @@ export default function AddCar() {
     setError("");
 
     try {
-      await axios.post("http://localhost:5000/cars", formData);
+      await axios.post("https://4b61-140-213-74-72.ngrok-free.app/cars", formData);
       alert("Mobil berhasil ditambahkan!");
       navigate("/admin");
     } catch (error) {

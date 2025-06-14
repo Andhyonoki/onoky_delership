@@ -22,7 +22,7 @@ const TradeInResult = () => {
 
     const fetchTradein = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/tradein/${tradeinId}`);
+        const res = await fetch(`https://4b61-140-213-74-72.ngrok-free.app/tradein/${tradeinId}`);
         if (!res.ok) {
           throw new Error("Data trade-in tidak ditemukan.");
         }
@@ -42,7 +42,7 @@ const TradeInResult = () => {
 
     const fetchRecommendations = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/tradein/${tradeinId}/suggestions`);
+        const res = await fetch(`https://4b61-140-213-74-72.ngrok-free.app/tradein/${tradeinId}/suggestions`);
         if (!res.ok) {
           throw new Error("Gagal mengambil rekomendasi mobil.");
         }
@@ -81,7 +81,7 @@ const TradeInResult = () => {
 
   const imageUrl =
     tradein.car_image && typeof tradein.car_image === "string"
-      ? `http://localhost:5000/uploads/${tradein.car_image}`
+      ? `https://4b61-140-213-74-72.ngrok-free.app/uploads/${tradein.car_image}`
       : "https://via.placeholder.com/400x300?text=No+Image";
 
   return (
@@ -139,7 +139,7 @@ const TradeInResult = () => {
           {recommendedCars.map((car) => {
             const carImageUrl =
               car.image && typeof car.image === "string"
-                ? `http://localhost:5000/uploads/${car.image}`
+                ? `https://4b61-140-213-74-72.ngrok-free.app/uploads/${car.image}`
                 : "https://via.placeholder.com/250x150?text=No+Image";
 
             return (

@@ -27,6 +27,17 @@ const upload = multer({ storage });
 app.use(cors());
 app.use(express.json());
 
+app.get('/api/cars', (req, res) => {
+  const sql = 'SELECT * FROM cars';
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error('Error mengambil data mobil:', err);
+      return res.status(500).json({ error: 'Gagal mengambil data mobil' });
+    }
+    res.json({ cars: results });
+  });
+});
+
 // Root endpoint
 app.get('/', (req, res) => {
   res.send('Backend jalan! 🔥');
@@ -364,6 +375,54 @@ app.post('/api/schedules', (req, res) => {
   });
 });
 
+app.get('/admin/cars', (req, res) => {
+  const sql = 'SELECT * FROM cars ORDER BY id DESC';
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error('❌ Error mengambil data mobil:', err);
+      return res.status(500).json({ message: 'Gagal mengambil data mobil' });
+    }
+    res.json({ cars: results });
+  });
+});
+
+app.post('/admin/cars', (req, res) => {
+  const { name, type, price, utility } = req.body;
+
+  if (!name || !type || !price || !utility) {
+    return res.status(400).json({ message: 'Mohon isi semua data kendaraan' });
+  }
+
+  const sql = 'INSERT INTO cars (name, type, price, utility) VALUES (?, ?, ?, ?)';
+  db.query(sql, [name, type, price, utility], (err, result) => {
+    if (err) {
+      console.error('❌ Error menambah mobil:', err);
+      return res.status(500).json({ message: 'Gagal menambah kendaraan' });
+    }
+    res.status(201).json({ message: 'Kendaraan berhasil ditambahkan', id: result.insertId });
+  });
+});
+
+app.delete('/admin/cars/:id', (req, res) => {
+  const carId = req.params.id;
+  const sql = 'DELETE FROM cars WHERE id = ?';
+
+  db.query(sql, [carId], (err, result) => {
+    if (err) {
+      console.error('❌ Error menghapus mobil:', err);
+      return res.status(500).json({ message: 'Gagal menghapus kendaraan' });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Kendaraan tidak ditemukan' });
+    }
+
+    res.json({ message: 'Kendaraan berhasil dihapus' });
+  });
+});
+
+
 app.listen(port, () => {
   console.log(`🚀 Server berjalan di http://localhost:${port}`);
 });
+

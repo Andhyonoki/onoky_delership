@@ -1,36 +1,19 @@
-// const mysql = require('mysql');
-
-// const db = mysql.createConnection({
-//   host: 'localhost',
-//   user: 'root',         // default user XAMPP
-//   password: '',         // password kosong default
-//   database: 'onoky_dealership'  // <-- GANTI dengan nama database kamu
-// });
-
-// db.connect((err) => {
-//   if (err) {
-//     console.error('Koneksi Database Gagal:', err);
-//   } else {
-//     console.log('Berhasil konek ke Database!');
-//   }
-// });
-
-// module.exports = db;
-// server/db.js
-const mysql = require('mysql2');
+const mysql = require("mysql2");
+require("dotenv").config();
 
 const db = mysql.createConnection({
-  host:     'localhost',
-  user:     'root',      // default XAMPP
-  password: '',          // default kosong
-  database: 'onoky_dealership' // ganti sesuai DB-mu
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME,
 });
 
-db.connect(err => {
+db.connect((err) => {
   if (err) {
-    console.error('❌ Koneksi DB gagal:', err);
+    console.error("❌ Gagal koneksi ke database:", err);
   } else {
-    console.log('✅ Berhasil konek ke Database!');
+    console.log("✅ Terkoneksi ke database Railway");
   }
 });
 

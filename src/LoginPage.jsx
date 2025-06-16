@@ -6,13 +6,21 @@ const LoginPage = ({ onSwitchToSignup, onLoginSuccess }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
   const handleLogin = async () => {
+    if (!email || !password) {
+      alert("Email dan password wajib diisi");
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      const res = await fetch("/login", {
+      const res = await fetch("https://childish-polydactyl-baritone.glitch.me/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -24,9 +32,7 @@ const LoginPage = ({ onSwitchToSignup, onLoginSuccess }) => {
         alert("Login berhasil! 🙌");
         console.log("User:", data.user);
 
-        // Simpan data user ke localStorage
         localStorage.setItem("user", JSON.stringify(data.user));
-
         onLoginSuccess(data.user);
 
         // Arahkan berdasarkan role
@@ -43,9 +49,10 @@ const LoginPage = ({ onSwitchToSignup, onLoginSuccess }) => {
     } catch (err) {
       console.error(err);
       alert("Tidak bisa terhubung ke server");
+    } finally {
+      setLoading(false);
     }
   };
-
 
   return (
     <div
@@ -87,12 +94,14 @@ const LoginPage = ({ onSwitchToSignup, onLoginSuccess }) => {
           </span>
         </div>
 
-        <button onClick={handleLogin}>Login</button>
+        <button onClick={handleLogin} disabled={loading}>
+          {loading ? "Logging in..." : "Login"}
+        </button>
 
         <p className="register-link">
           Don't have an account?{" "}
           <a
-            href="SignupForm"
+            href="#"
             onClick={(e) => {
               e.preventDefault();
               onSwitchToSignup();

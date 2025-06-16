@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Sidebar from "./component/Navbar";
-import { Link } from "react-router-dom"; 
+import { Link } from "react-router-dom";
 import "./Home.css";
+
+// Buat instance axios dengan baseURL dari .env
+const API = process.env.REACT_APP_API_BASE_URL;
+const apiClient = axios.create({
+  baseURL: API,
+  headers: { "Content-Type": "application/json" }
+});
 
 const carTypes = [
   { label: "All", icon: "🌐" },
@@ -24,10 +31,11 @@ export default function Home() {
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3000/cars")
+    // Menggunakan axios instance yang sudah memiliki baseURL
+    apiClient
+      .get("/cars")
       .then((res) => setCars(res.data))
-      .catch((err) => console.error(err));
+      .catch((err) => console.error("Error fetch cars:", err));
 
     const storedUser = JSON.parse(localStorage.getItem("user"));
     if (storedUser) {
@@ -41,7 +49,9 @@ export default function Home() {
 
   const filteredCars = cars.filter((car) => {
     const matchesType = selectedType === "All" || car.type === selectedType;
-    const matchesSearch = car.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = car.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
     return matchesType && matchesSearch;
   });
 
@@ -60,24 +70,26 @@ export default function Home() {
         </div>
 
         <div className="search-filter-bar">
-        <div className="search-input-wrapper">
-          <span className="search-icon">🔍</span>
-          <input
-            type="text"
-            placeholder="Search for any possible car on the market"
-            className="search-input"
-            value={searchTerm}
-            onChange={handleSearchChange}
-          />
+          <div className="search-input-wrapper">
+            <span className="search-icon">🔍</span>
+            <input
+              type="text"
+              placeholder="Search for any possible car on the market"
+              className="search-input"
+              value={searchTerm}
+              onChange={handleSearchChange}
+            />
+          </div>
         </div>
-      </div>
 
         <div className="car-types-wrapper">
           <div className="car-types">
             {carTypes.map((type) => (
               <button
                 key={type.label}
-                className={`car-type-btn ${selectedType === type.label ? "selected" : ""}`}
+                className={`car-type-btn ${
+                  selectedType === type.label ? "selected" : ""
+                }`}
                 onClick={() => setSelectedType(type.label)}
               >
                 <span className="icon">{type.icon}</span> {type.label}
@@ -110,7 +122,7 @@ export default function Home() {
                   <p className="price">
                     Rp. {Number(car.price).toLocaleString("id-ID")}
                   </p>
-                 <Link
+                  <Link
                     to={`/car/${car.id}`}
                     state={{ car }}
                     className="detail-link"

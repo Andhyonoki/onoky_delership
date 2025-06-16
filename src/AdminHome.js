@@ -8,7 +8,7 @@ const AdminHome = () => {
   // Ambil data mobil dari backend
   const fetchCars = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/admin/cars');
+      const response = await axios.get('https://childish-polydactyl-baritone.glitch.me/cars');
       setCars(response.data.cars);
       setLoading(false);
     } catch (error) {

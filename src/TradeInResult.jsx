@@ -12,7 +12,7 @@ const TradeInResult = () => {
   const [loadingRecommendations, setLoadingRecommendations] = useState(true);
   const [error, setError] = useState(null);
 
-  const API_BASE = "http://localhost:5000";
+  const API_BASE = "https://childish-polydactyl-baritone.glitch.me";
   const PLACEHOLDER = "https://via.placeholder.com/250x150?text=No+Image";
 
   // Helper untuk membangun URL gambar

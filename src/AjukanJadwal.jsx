@@ -37,7 +37,7 @@ export default function AjukanJadwal() {
 
   const fetchSchedules = async (userId) => {
     try {
-      const res = await fetch("http://localhost:5000/api/schedules");
+      const res = await fetch("https://childish-polydactyl-baritone.glitch.me/schedules");
       const data = await res.json();
 
       if (Array.isArray(data)) {
@@ -101,7 +101,7 @@ export default function AjukanJadwal() {
     console.log("📤 Mengirim data jadwal ke backend:", payload);
 
     try {
-      const res = await fetch("http://localhost:5000/api/schedules", {
+      const res = await fetch("https://childish-polydactyl-baritone.glitch.me/schedules", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

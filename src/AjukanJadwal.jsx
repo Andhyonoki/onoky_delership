@@ -37,7 +37,7 @@ export default function AjukanJadwal() {
 
   const fetchSchedules = async (userId) => {
     try {
-      const res = await fetch("https://childish-polydactyl-baritone.glitch.me/schedules");
+      const res = await fetch("https://childish-polydactyl-baritone.glitch.me/api/schedules");
       const data = await res.json();
 
       if (Array.isArray(data)) {
@@ -91,17 +91,16 @@ export default function AjukanJadwal() {
       return;
     }
 
-      const payload = {
+    const payload = {
       date: formatted,
       userId: user.id,
-      carId: carId !== undefined ? Number(carId) : null,
+      carId: carId ? Number(carId) : null,
     };
-
 
     console.log("📤 Mengirim data jadwal ke backend:", payload);
 
     try {
-      const res = await fetch("https://childish-polydactyl-baritone.glitch.me/schedules", {
+      const res = await fetch("https://childish-polydactyl-baritone.glitch.me/api/schedules", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -204,6 +203,15 @@ export default function AjukanJadwal() {
               })}
             </div>
           ))}
+
+          {selectedDate && (
+            <div className="selected-date-label">
+              <p>
+                Tanggal dipilih:{" "}
+                <strong>{dayjs(selectedDate).format("D MMMM YYYY")}</strong>
+              </p>
+            </div>
+          )}
 
           <form className="jadwal-form" onSubmit={handleDateSubmit}>
             <input

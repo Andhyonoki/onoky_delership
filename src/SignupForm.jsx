@@ -16,23 +16,31 @@ export default function SignupForm({ onSwitchToLogin }) {
     e.preventDefault(); // cegah reload halaman
 
     try {
-      const res = await fetch("/register", {  // pastikan endpoint ini di backend sudah ada
+      const res = await fetch("https://childish-polydactyl-baritone.glitch.me/register", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, paymentMethod, email, password }),
-
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, email, password, paymentMethod }),
       });
 
-      const data = await res.json();
+      const text = await res.text();
 
-      if (res.ok) {
-        alert("Registrasi berhasil!");
-        onSwitchToLogin(); // balik ke halaman login otomatis
-      } else {
-        alert("Gagal daftar: " + data.message);
+      try {
+        const data = JSON.parse(text);
+
+        if (res.ok) {
+          alert("Registrasi berhasil!");
+          onSwitchToLogin();
+        } else {
+          alert("Gagal daftar: " + data.message);
+        }
+      } catch (parseError) {
+        console.error("Response bukan JSON:", text);
+        alert("Terjadi kesalahan. Respon dari server tidak valid.");
       }
     } catch (error) {
-      alert("Terjadi kesalahan saat mendaftar");
+      alert("Terjadi kesalahan saat mendaftar.");
       console.error(error);
     }
   };
